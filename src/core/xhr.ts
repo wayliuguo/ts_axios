@@ -2,6 +2,7 @@ import cookie from '../helpers/cookie'
 import { createError } from '../helpers/error'
 import { parseHeaders } from '../helpers/headers'
 import { isURLSameOrigin } from '../helpers/url'
+import { isFormData } from '../helpers/util'
 import { AxiosPromise, AxiosRequestConfig, AxiosResponse } from '../types'
 
 export default function xhr(config: AxiosRequestConfig): AxiosPromise {
@@ -16,7 +17,9 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
       cancelToken,
       withCredentials,
       xsrfCookieName,
-      xsrfHeaderName
+      xsrfHeaderName,
+      onDownloadProgress,
+      onUploadProgress
     } = config
 
     const request = new XMLHttpRequest()
@@ -34,6 +37,18 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
       if (xsrfValue) {
         headers[xsrfHeaderName!] = xsrfValue
       }
+    }
+
+    if (onDownloadProgress) {
+      request.onprogress = onDownloadProgress
+    }
+
+    if (onUploadProgress) {
+      request.upload.onprogress = onUploadProgress
+    }
+
+    if (isFormData(data)) {
+      delete headers['Content-Type']
     }
 
     if (responseType) {
