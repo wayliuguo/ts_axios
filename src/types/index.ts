@@ -23,7 +23,11 @@ export interface AxiosRequestConfig {
   params?: any
   headers?: any
   responseType?: XMLHttpRequestResponseType
-  timeout?: number
+  timeout?: number,
+  transformRequest?: AxiosTransformer | AxiosTransformer[]
+  transformResponse?: AxiosTransformer | AxiosTransformer[]
+
+  [propName: string]: any
 }
 
 export interface AxiosResponse<T = any> {
@@ -46,6 +50,7 @@ export interface AxiosError extends Error {
 export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {}
 
 export interface Axios {
+  defaults: AxiosRequestConfig
   interceptors: Interceptors
 
   request<T = any>(config: AxiosRequestConfig): AxiosPromise<T>
@@ -71,6 +76,10 @@ export interface AxiosInstance extends Axios {
   <T = any>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>
 }
 
+export interface AxiosStatic extends AxiosInstance{
+  create(config?: AxiosRequestConfig): AxiosInstance
+}
+
 export interface AxiosInterceptorManager<T> {
   use(resolved: ResolvedFn<T>, rejected?: RejectedFn): number
 
@@ -93,4 +102,8 @@ export interface Interceptors {
 export interface PromiseChain {
   resolved: ResolvedFn | ((config: AxiosRequestConfig) => AxiosPromise)
   rejected?: RejectedFn
+}
+
+export interface AxiosTransformer {
+  (data: any, headers?: any): any
 }
