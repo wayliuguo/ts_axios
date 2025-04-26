@@ -1,10 +1,8 @@
-import InterceptorManager from '../core/InterceptorManager'
-
 export type Method =
   | 'get'
   | 'GET'
   | 'delete'
-  | 'Delete'
+  | 'DELETE'
   | 'head'
   | 'HEAD'
   | 'options'
@@ -40,21 +38,6 @@ export interface AxiosRequestConfig {
   [propName: string]: any
 }
 
-export interface CancelToken {
-  promise: Promise<Cancel>
-  reason?: Cancel
-
-  throwIfRequested(): void
-}
-
-export interface Canceler {
-  (message?: string): void
-}
-
-export interface CancelExecutor {
-  (cancel: Canceler): void
-}
-
 export interface AxiosResponse<T = any> {
   data: T
   status: number
@@ -64,6 +47,8 @@ export interface AxiosResponse<T = any> {
   request: any
 }
 
+export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {}
+
 export interface AxiosError extends Error {
   config: AxiosRequestConfig
   code?: string
@@ -72,11 +57,12 @@ export interface AxiosError extends Error {
   isAxiosError: boolean
 }
 
-export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {}
-
 export interface Axios {
   defaults: AxiosRequestConfig
-  interceptors: Interceptors
+  interceptors: {
+    request: AxiosInterceptorManager<AxiosRequestConfig>
+    response: AxiosInterceptorManager<AxiosResponse>
+  }
 
   request<T = any>(config: AxiosRequestConfig): AxiosPromise<T>
 
@@ -121,12 +107,37 @@ export interface AxiosStatic extends AxiosInstance {
   Axios: AxiosClassStatic
 }
 
-export interface Cancel {
-  message?: string
+export interface AxiosInterceptorManager<T> {
+  use(resolved: ResolvedFn<T>, rejected?: RejectedFn): number
+
+  eject(id: number): void
 }
 
-export interface CancelStatic {
-  new (message?: string): Cancel
+export interface ResolvedFn<T> {
+  (val: T): T | Promise<T>
+}
+
+export interface RejectedFn {
+  (error: any): any
+}
+
+export interface AxiosTransformer {
+  (data: any, headers?: any): any
+}
+
+export interface CancelToken {
+  promise: Promise<Cancel>
+  reason?: Cancel
+
+  throwIfRequested(): void
+}
+
+export interface Canceler {
+  (message?: string): void
+}
+
+export interface CancelExecutor {
+  (cancel: Canceler): void
 }
 
 export interface CancelTokenSource {
@@ -140,32 +151,12 @@ export interface CancelTokenStatic {
   source(): CancelTokenSource
 }
 
-export interface AxiosInterceptorManager<T> {
-  use(resolved: ResolvedFn<T>, rejected?: RejectedFn): number
-
-  eject(id: number): void
+export interface Cancel {
+  message?: string
 }
 
-export interface ResolvedFn<T = any> {
-  (val: T): T | Promise<T>
-}
-
-export interface RejectedFn {
-  (error: any): any
-}
-
-export interface Interceptors {
-  request: InterceptorManager<AxiosRequestConfig>
-  response: InterceptorManager<AxiosResponse>
-}
-
-export interface PromiseChain {
-  resolved: ResolvedFn | ((config: AxiosRequestConfig) => AxiosPromise)
-  rejected?: RejectedFn
-}
-
-export interface AxiosTransformer {
-  (data: any, headers?: any): any
+export interface CancelStatic {
+  new (message?: string): Cancel
 }
 
 export interface AxiosBasicCredentials {

@@ -1,16 +1,23 @@
-import { transformRequest, transformResponse } from '../helpers/data'
-import { flattenHeaders, processHeaders } from '../helpers/headers'
-import { buildURL } from '../helpers/url'
-import { combineURL, isAbsoluteURL } from '../helpers/util'
 import { AxiosPromise, AxiosRequestConfig, AxiosResponse } from '../types'
-import transform from './transform'
 import xhr from './xhr'
+import { buildURL, isAbsoluteURL, combineURL } from '../helpers/url'
+import { flattenHeaders } from '../helpers/headers'
+import transform from './transform'
 
 export default function dispatchRequest(config: AxiosRequestConfig): AxiosPromise {
+  throwIfCancellationRequested(config)
   processConfig(config)
-  return xhr(config).then(res => {
-    return transformResponseData(res)
-  })
+  return xhr(config).then(
+    res => {
+      return transformResponseData(res)
+    },
+    e => {
+      if (e && e.response) {
+        e.response = transformResponseData(e.response)
+      }
+      return Promise.reject(e)
+    }
+  )
 }
 
 function processConfig(config: AxiosRequestConfig): void {
@@ -30,4 +37,10 @@ export function transformURL(config: AxiosRequestConfig): string {
 function transformResponseData(res: AxiosResponse): AxiosResponse {
   res.data = transform(res.data, res.headers, res.config.transformResponse)
   return res
+}
+
+function throwIfCancellationRequested(config: AxiosRequestConfig): void {
+  if (config.cancelToken) {
+    config.cancelToken.throwIfRequested()
+  }
 }

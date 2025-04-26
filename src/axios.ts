@@ -1,4 +1,4 @@
-import { AxiosStatic, AxiosRequestConfig } from './types'
+import { AxiosRequestConfig, AxiosStatic } from './types'
 import Axios from './core/Axios'
 import { extend } from './helpers/util'
 import defaults from './defaults'
@@ -34,5 +34,7 @@ axios.spread = function spread(callback) {
     return callback.apply(null, arr)
   }
 }
+
+axios.Axios = Axios
 
 export default axios

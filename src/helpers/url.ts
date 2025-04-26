@@ -5,9 +5,6 @@ interface URLOrigin {
   host: string
 }
 
-const urlParsingNode = document.createElement('a')
-const currentOrigin = resolveURL(window.location.href)
-
 function encode(val: string): string {
   return encodeURIComponent(val)
     .replace(/%40/g, '@')
@@ -74,12 +71,23 @@ export function buildURL(
   return url
 }
 
+export function isAbsoluteURL(url: string): boolean {
+  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url)
+}
+
+export function combineURL(baseURL: string, relativeURL?: string): string {
+  return relativeURL ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '') : baseURL
+}
+
 export function isURLSameOrigin(requestURL: string): boolean {
   const parsedOrigin = resolveURL(requestURL)
   return (
     parsedOrigin.protocol === currentOrigin.protocol && parsedOrigin.host === currentOrigin.host
   )
 }
+
+const urlParsingNode = document.createElement('a')
+const currentOrigin = resolveURL(window.location.href)
 
 function resolveURL(url: string): URLOrigin {
   urlParsingNode.setAttribute('href', url)
